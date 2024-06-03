@@ -13,12 +13,10 @@ exporters:
     loglevel: info
   debug:
     verbosity: detailed
-  prometheus:
-    endpoint: otel-collector:8889
 
 service:
   pipelines:
     metrics:
       receivers: [otlp]
-      exporters: [debug, prometheus]
+      exporters: [debug]
   extensions: [zpages]
