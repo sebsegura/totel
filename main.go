@@ -15,7 +15,7 @@ import (
 
 type Event struct{}
 
-const _ip = "3.93.64.76:4317"
+const _ip = "18.208.231.129:4317"
 
 // const _ip = "localhost:4317"
 
@@ -96,7 +96,7 @@ func Do(ctx context.Context, _ *Event) error {
 }
 
 func main() {
-	//lambda.EnableLocalHTTP("9000")
+	lambda.EnableLocalHTTP("9000")
 	lambda.AsyncStart(Do, false)
 	//lambda.Start(otellambda.InstrumentHandler(Do))
 }
