@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/oklog/ulid/v2"
+	"go.opentelemetry.io/contrib/propagators/aws/xray"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/propagation"
 	"net/http"
 	"os"
 	"strings"
@@ -55,12 +57,15 @@ func (s *Service) call(ctx context.Context, in *Request) (*Response, error) {
 	}
 	b, _ := json.Marshal(p)
 
-	req, err := http.NewRequest(http.MethodPost, endpoint(), strings.NewReader(string(b)))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint(), strings.NewReader(string(b)))
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
+
+	propagator := xray.Propagator{}
+	propagator.Inject(ctx, propagation.HeaderCarrier(req.Header))
 
 	req.Header.Set("Content-Type", "application/json")
 	span.AddEvent("Making request...")

@@ -2,6 +2,7 @@ package utel
 
 import (
 	"context"
+	"go.opentelemetry.io/contrib/propagators/aws/xray"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -35,10 +36,16 @@ func InitTracer(ctx context.Context, cfg *Config) *sdktrace.TracerProvider {
 		log.Fatalf("cannot set trace exporter: %v", err)
 	}
 
+	idg := xray.NewIDGenerator()
+
 	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithSampler(sdktrace.AlwaysSample()),
 		sdktrace.WithBatcher(exporter),
-		sdktrace.WithResource(res))
+		sdktrace.WithResource(res),
+		sdktrace.WithIDGenerator(idg),
+	)
 	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(xray.Propagator{})
 
 	return tp
 }

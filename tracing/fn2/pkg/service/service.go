@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
+	"github.com/Bancar/goala/ulog"
+	"github.com/Bancar/goala/utel"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -10,8 +12,11 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	"io"
 	"log"
-	"totel/utel"
+	"net/http"
+	ut "totel/utel"
 )
 
 type Request struct {
@@ -33,18 +38,47 @@ func New(c Client) *Service {
 	}
 }
 
-func (s *Service) Handle(ctx context.Context, in *Request) (*Response, error) {
-	tracer := otel.Tracer(utel.GetUtelConfig().ServiceName)
-	ctx, span := tracer.Start(ctx, "HandleRequest")
-	defer span.End()
+func (s *Service) Handle(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	mp := otel.GetMeterProvider()
+	cfg := ut.GetUtelConfig()
 
-	if err := s.client.Create(ctx, in); err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
-		return nil, err
+	in, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		writeResponse(w, []byte(`{"error": "bad request"}`))
+		return
 	}
 
-	return &Response{Msg: "ok"}, nil
+	var rr Request
+	if err = json.Unmarshal(in, &rr); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		writeResponse(w, []byte(`{"error": "internal"}`))
+		return
+	}
+
+	if err = s.client.Create(ctx, &rr); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		writeResponse(w, []byte(`{"error": "internal"}`))
+		return
+	}
+
+	res, _ := json.Marshal(&Response{Msg: "ok"})
+	err = utel.IncrementCounter(ctx, mp.(*sdkmetric.MeterProvider), &utel.MetricAttributes{
+		Name:  "fn2-metric",
+		Unit:  "1",
+		Flow:  cfg.Flow,
+		Owner: cfg.Owner,
+	})
+	if err != nil {
+		ulog.With(ulog.Str("error", err.Error())).Error("cannot send metric data")
+	}
+
+	writeResponse(w, res)
+}
+
+func writeResponse(w http.ResponseWriter, body []byte) {
+	_, _ = w.Write(body)
 }
 
 func (s *Service) Save(ctx context.Context, in *Request) error {
@@ -74,8 +108,7 @@ func NewDDBClient(ctx context.Context) Client {
 }
 
 func (c *ddb) Create(ctx context.Context, in *Request) error {
-	fmt.Println("hey")
-	tracer := otel.Tracer(utel.GetUtelConfig().ServiceName)
+	tracer := otel.Tracer(ut.GetUtelConfig().ServiceName)
 	ctx, span := tracer.Start(ctx, "DDB")
 	defer span.End()
 
