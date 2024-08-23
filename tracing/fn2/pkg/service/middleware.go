@@ -1,26 +1,49 @@
 package service
 
 import (
-	"github.com/Bancar/goala/utel"
-	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"log"
 	"net/http"
-	ut "totel/utel"
+	"totel/utel"
 )
 
 func Instrument(next func(w http.ResponseWriter, r *http.Request)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		cfg := &ut.Config{
-			ServiceName: "fn2",
-			Owner:       "goala",
-			Flow:        "myflow",
-		}
-		ut.SetUtelConfig(cfg)
-
 		ctx := r.Context()
-		mp := utel.EnableOTELMetric(ctx, cfg.Owner)
-		otel.SetMeterProvider(mp)
-		defer func() { _ = mp.Shutdown(ctx) }()
+		shutdown, err := utel.EnableOTELInstrumentation(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer func() {
+			_ = shutdown(ctx)
+		}()
 
-		next(w, r)
+		wr := &statusRecorder{
+			ResponseWriter: w,
+			statusCode:     http.StatusOK,
+		}
+
+		next(wr, r)
+
+		labels := []attribute.KeyValue{
+			attribute.String("method", r.Method),
+			attribute.Int("status_code", wr.statusCode),
+		}
+
+		_ = utel.IncrementCounter(ctx, "fn2-requests", labels...)
 	}
+}
+
+type statusRecorder struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (r *statusRecorder) WriteHeader(statusCode int) {
+	r.statusCode = statusCode
+	r.ResponseWriter.WriteHeader(statusCode)
+}
+
+func (r *statusRecorder) Write(body []byte) (int, error) {
+	return r.ResponseWriter.Write(body)
 }

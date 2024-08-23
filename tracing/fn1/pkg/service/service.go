@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/oklog/ulid/v2"
 	"go.opentelemetry.io/contrib/propagators/aws/xray"
-	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/propagation"
 	"net/http"
@@ -42,8 +42,7 @@ func id() string {
 }
 
 func (s *Service) call(ctx context.Context, in *Request) (*Response, error) {
-	tracer := otel.Tracer(utel.GetUtelConfig().ServiceName)
-	ctx, span := tracer.Start(ctx, "Fn2Request")
+	ctx, span := utel.NewServerSpan(ctx, "Fn2Request")
 	defer span.End()
 
 	type R struct {
@@ -61,6 +60,7 @@ func (s *Service) call(ctx context.Context, in *Request) (*Response, error) {
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
+		fmt.Println("error 1")
 		return nil, err
 	}
 
@@ -77,7 +77,10 @@ func (s *Service) call(ctx context.Context, in *Request) (*Response, error) {
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("invalid status code: %d", res.StatusCode)
+		err = fmt.Errorf("invalid status code: %d", res.StatusCode)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
 	}
 
 	defer func() {
@@ -89,6 +92,8 @@ func (s *Service) call(ctx context.Context, in *Request) (*Response, error) {
 		return nil, err
 	}
 
+	span.SetAttributes(attribute.String("process.status", "ok"))
+
 	return &r, nil
 }
 
@@ -96,6 +101,8 @@ func endpoint() string {
 	e := os.Getenv("ENDPOINT")
 	if e == "" {
 		e = "http://127.0.0.1:9001/lambda"
+	} else {
+		e = "https://t69dj24z8h.execute-api.us-east-1.amazonaws.com/test/otel"
 	}
 
 	return e

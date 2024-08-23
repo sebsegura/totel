@@ -6,8 +6,9 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	"log"
+	"go.opentelemetry.io/otel/trace"
 	"os"
 )
 
@@ -25,15 +26,10 @@ func newTraceExporter(ctx context.Context) (*otlptrace.Exporter, error) {
 		otlptracegrpc.WithInsecure())
 }
 
-func InitTracer(ctx context.Context, cfg *Config) *sdktrace.TracerProvider {
-	res, err := NewResource(ctx, cfg)
-	if err != nil {
-		log.Fatalf("cannot start trace provider: %v", err)
-	}
-
+func InitTracer(ctx context.Context, res *resource.Resource) (*sdktrace.TracerProvider, error) {
 	exporter, err := newTraceExporter(ctx)
 	if err != nil {
-		log.Fatalf("cannot set trace exporter: %v", err)
+		return nil, err
 	}
 
 	idg := xray.NewIDGenerator()
@@ -44,8 +40,17 @@ func InitTracer(ctx context.Context, cfg *Config) *sdktrace.TracerProvider {
 		sdktrace.WithResource(res),
 		sdktrace.WithIDGenerator(idg),
 	)
-	otel.SetTracerProvider(tp)
 	otel.SetTextMapPropagator(xray.Propagator{})
 
-	return tp
+	return tp, nil
+}
+
+func NewServerSpan(ctx context.Context, spanName string) (context.Context, trace.Span) {
+	tracer := otel.Tracer(GetUtelConfig().ServiceName)
+	return tracer.Start(ctx, spanName, trace.WithSpanKind(trace.SpanKindServer))
+}
+
+func NewClientSpan(ctx context.Context, spanName string) (context.Context, trace.Span) {
+	tracer := otel.Tracer(GetUtelConfig().ServiceName)
+	return tracer.Start(ctx, spanName, trace.WithSpanKind(trace.SpanKindClient))
 }

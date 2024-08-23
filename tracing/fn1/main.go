@@ -5,9 +5,17 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"net/http"
 	"totel/fn1/pkg/service"
+	"totel/utel"
 )
 
 func main() {
+	cfg := &utel.Config{
+		ServiceName: "fn1",
+		Owner:       "goala",
+		Flow:        "myflow",
+	}
+	utel.SetUtelConfig(cfg)
+
 	svc := service.New(&http.Client{
 		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	})

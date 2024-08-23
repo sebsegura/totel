@@ -2,19 +2,19 @@ package service
 
 import (
 	"context"
+	"log"
 	"totel/utel"
 )
 
 func Instrument(next func(ctx context.Context, in *Request) (*Response, error)) func(context.Context, *Request) (*Response, error) {
 	return func(ctx context.Context, in *Request) (*Response, error) {
-		cfg := &utel.Config{
-			ServiceName: "fn1",
-			Owner:       "goala",
-			Flow:        "myflow",
+		shutdown, err := utel.EnableOTELInstrumentation(ctx)
+		if err != nil {
+			log.Fatal(err)
 		}
-		utel.SetUtelConfig(cfg)
-		tp := utel.InitTracer(ctx, cfg)
-		defer func() { _ = tp.Shutdown(ctx) }()
+		defer func() {
+			_ = shutdown(ctx)
+		}()
 
 		return next(ctx, in)
 	}
