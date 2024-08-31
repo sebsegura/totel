@@ -1,11 +1,11 @@
 package main
 
 import (
+	"github.com/Bancar/goala/utel"
 	"github.com/Bancar/lambda-go"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"net/http"
 	"totel/fn1/pkg/service"
-	"totel/utel"
 )
 
 func main() {

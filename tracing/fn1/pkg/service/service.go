@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Bancar/goala/utel"
 	"github.com/oklog/ulid/v2"
 	"go.opentelemetry.io/contrib/propagators/aws/xray"
 	"go.opentelemetry.io/otel/attribute"
@@ -12,7 +13,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"totel/utel"
 )
 
 type Request struct {
@@ -42,7 +42,7 @@ func id() string {
 }
 
 func (s *Service) call(ctx context.Context, in *Request) (*Response, error) {
-	ctx, span := utel.NewServerSpan(ctx, "Fn2Request")
+	ctx, span := utel.NewSpan(ctx, "Fn2Request")
 	defer span.End()
 
 	type R struct {

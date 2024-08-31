@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/Bancar/goala/ulog"
+	"github.com/Bancar/goala/utel"
 	"io"
 	"net/http"
-	"totel/utel"
 )
 
 type Request struct {
@@ -30,7 +30,7 @@ func New(c Client) *Service {
 
 func (s *Service) Handle(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	ctx, span := utel.NewClientSpan(ctx, "Handle")
+	ctx, span := utel.NewSpan(ctx, "Handle")
 	defer span.End()
 
 	in, err := io.ReadAll(r.Body)

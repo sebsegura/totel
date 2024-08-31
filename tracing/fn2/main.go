@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/Bancar/goala/utel"
 	"github.com/Bancar/lambda-go"
 	"totel/fn2/pkg/service"
-	"totel/utel"
 )
 
 func main() {
