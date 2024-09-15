@@ -7,12 +7,7 @@ import (
 )
 
 func main() {
-	cfg := &utel.Config{
-		ServiceName: "fn2",
-		Owner:       "goala",
-		Flow:        "myflow",
-	}
-	utel.SetUtelConfig(cfg)
+	utel.SetUtelConfig("goala", "myflow")
 
 	svc := service.New(service.NewInMemClient())
 	//lambda.EnableLocalHTTP("9001")

@@ -1,16 +1,16 @@
 package service
 
 import (
+	"github.com/Bancar/goala/utel"
 	"go.opentelemetry.io/otel/attribute"
 	"log"
 	"net/http"
-	"totel/utel"
 )
 
 func Instrument(next func(w http.ResponseWriter, r *http.Request)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		shutdown, err := utel.EnableOTELInstrumentation(ctx)
+		shutdown, err := utel.EnableInstrumentation(ctx)
 		if err != nil {
 			log.Fatal(err)
 		}

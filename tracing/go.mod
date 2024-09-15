@@ -6,7 +6,7 @@ toolchain go1.23.0
 
 require (
 	github.com/Bancar/goala/ulog v1.0.3
-	github.com/Bancar/goala/utel v1.0.2-0.20240831003117-ee2b8268abec
+	github.com/Bancar/goala/utel v1.0.2-0.20240915222630-921b3d91643e
 	github.com/Bancar/lambda-go v1.0.5
 	github.com/oklog/ulid/v2 v2.1.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.53.0

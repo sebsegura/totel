@@ -9,12 +9,7 @@ import (
 )
 
 func main() {
-	cfg := &utel.Config{
-		ServiceName: "fn1",
-		Owner:       "goala",
-		Flow:        "myflow",
-	}
-	utel.SetUtelConfig(cfg)
+	utel.SetUtelConfig("goala", "myflow")
 
 	svc := service.New(&http.Client{
 		Transport: otelhttp.NewTransport(http.DefaultTransport),

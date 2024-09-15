@@ -2,6 +2,8 @@ github.com/Bancar/goala/ulog v1.0.3 h1:4LiKiZqp760hzFUu53aGA4EComny0uPBtEEru/98F
 github.com/Bancar/goala/ulog v1.0.3/go.mod h1:DsDwQqH0B7zVNXc+vY6re9xfrJh2DMQT6/S6PRQFwAg=
 github.com/Bancar/goala/utel v1.0.2-0.20240831003117-ee2b8268abec h1:VVs+MgAaMLa0qAHvpsFQIi0+qHrrJnvxDQStwf0NlRA=
 github.com/Bancar/goala/utel v1.0.2-0.20240831003117-ee2b8268abec/go.mod h1:qujwIDVbhGonLphBF6zF+ftvhzmjJ6APmO7e5DawPTA=
+github.com/Bancar/goala/utel v1.0.2-0.20240915222630-921b3d91643e h1:HH5FiyQwS5JktfHnswGXps0KhqRVR3NPw4x5HvvhaVk=
+github.com/Bancar/goala/utel v1.0.2-0.20240915222630-921b3d91643e/go.mod h1:qujwIDVbhGonLphBF6zF+ftvhzmjJ6APmO7e5DawPTA=
 github.com/Bancar/lambda-go v1.0.5 h1:4c9w0iL1L6IqeFsZ8KTaJHdERiH3vHPJRfTyxyJCLWU=
 github.com/Bancar/lambda-go v1.0.5/go.mod h1:0GyTpV2qOYooBW39JTqxmuGm0i3DhdKp7hekAVX7PV4=
 github.com/aws/aws-lambda-go v1.47.0 h1:0H8s0vumYx/YKs4sE7YM0ktwL2eWse+kfopsRI1sXVI=
